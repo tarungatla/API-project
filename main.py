@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from numpy import append
 import schemas
 import models
 
@@ -17,11 +18,28 @@ def get_session():
 
 app = FastAPI()
 
-
 @app.get("/")
 def getItems(session: Session = Depends(get_session)):   #get_session function is our dependency to store and close the session
     items = session.query(models.Item).all()
     return items
+
+@app.get("/count")
+def getItems(session: Session = Depends(get_session)):   #get_session function is our dependency to store and close the session
+    c = session.query(models.Item).count()
+    return c
+
+
+@app.get("/not/{id}")
+def getItems(id :int, session: Session = Depends(get_session)):   #get_session function is our dependency to store and close the session
+    items = session.query(models.Item).all()
+    temp = []
+    for item in items:
+        if item.id is id:
+            continue
+        else: temp.append(item)
+    return temp
+     
+
 
 @app.get("/{id}")
 def getItem(id:int, session: Session = Depends(get_session)):
@@ -36,7 +54,6 @@ def addItem(item:schemas.Item, session: Session = Depends(get_session)):
     session.add(item)
     session.commit()
     session.refresh(item)
-
     return item
 
 
